@@ -42,6 +42,11 @@ import org.springframework.lang.Nullable;
  */
 public interface BeanPostProcessor {
 
+	//BeanPostPrecessor我们经常看到Spring中使用，这是Spring开放式架构的一个必不可少的亮点，给用户充足的权限去更改或者扩展Spring,
+	// 而除了BeanPostProcessor外还有很多其他的PostProcessor，当然大部分都以此为基础，集成自BeanPostProcessor。
+	// BeanPostProcessor在调用用户自定义初始化方法前或者调用自定义初始化方法后分别会调用BeanPostProcessor的
+	// postProcessBeforeInitialization和postProcessAfterinitialization方法，使用户可以根据自己的业务需求就行相应的处理。
+
 	/**
 	 * Apply this BeanPostProcessor to the given new bean instance <i>before</i> any bean
 	 * initialization callbacks (like InitializingBean's {@code afterPropertiesSet}
