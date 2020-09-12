@@ -141,6 +141,9 @@ public class ClassPathXmlApplicationContext extends AbstractXmlApplicationContex
 		super(parent);
 		setConfigLocations(configLocations);
 		if (refresh) {
+			//设置了路径之后，便可以根据路径做配置文件的解析以及各种功能的实现了。
+			// 可以说refresh函数中包含了几乎ApplicationContext中提供的全部功能，而且此函数中逻辑非常清晰明了，
+			// 使我们很容易分析对应的层次及逻辑
 			refresh();
 		}
 	}
