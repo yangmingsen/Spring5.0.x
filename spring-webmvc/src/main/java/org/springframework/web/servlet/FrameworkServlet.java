@@ -499,7 +499,9 @@ public abstract class FrameworkServlet extends HttpServletBean implements Applic
 		long startTime = System.currentTimeMillis();
 
 		try {
+			// 创建servlet子上下文
 			this.webApplicationContext = initWebApplicationContext();
+			// 可扩展方法
 			initFrameworkServlet();
 		}
 		catch (ServletException | RuntimeException ex) {
@@ -518,16 +520,22 @@ public abstract class FrameworkServlet extends HttpServletBean implements Applic
 	 * Initialize and publish the WebApplicationContext for this servlet.
 	 * <p>Delegates to {@link #createWebApplicationContext} for actual creation
 	 * of the context. Can be overridden in subclasses.
+	 *
+	 * 初始化并发布此Servlet的WebApplicationContext。
+	 * 代表创建WebApplicationContext以实际创建上下文。 可以在子类中覆盖。
+	 *
 	 * @return the WebApplicationContext instance
 	 * @see #FrameworkServlet(WebApplicationContext)
 	 * @see #setContextClass
 	 * @see #setContextConfigLocation
-	 */
+	 */ //此处的initWebApplicationContext方法同ContextLoader步骤相似
 	protected WebApplicationContext initWebApplicationContext() {
+		// 从ServletContext获取SpringMVC根上下文
 		WebApplicationContext rootContext =
 				WebApplicationContextUtils.getWebApplicationContext(getServletContext());
 		WebApplicationContext wac = null;
 
+		// 如果SpringMVC的servlet子上下文对象不为空，则设置根上下文为其父类上下文，然后刷新
 		if (this.webApplicationContext != null) {
 			// A context instance was injected at construction time -> use it
 			wac = this.webApplicationContext;
@@ -545,14 +553,14 @@ public abstract class FrameworkServlet extends HttpServletBean implements Applic
 				}
 			}
 		}
-		if (wac == null) {
+		if (wac == null) { // 根据init-param配置的属性名称从ServletContext查找SpringMVC的servlet子上下文
 			// No context instance was injected at construction time -> see if one
 			// has been registered in the servlet context. If one exists, it is assumed
 			// that the parent context (if any) has already been set and that the
 			// user has performed any initialization such as setting the context id
 			wac = findWebApplicationContext();
 		}
-		if (wac == null) {
+		if (wac == null) { // 若还为空，则创建一个新的上下文对象并刷新
 			// No context instance is defined for this servlet -> create a local one
 			wac = createWebApplicationContext(rootContext);
 		}
@@ -561,11 +569,12 @@ public abstract class FrameworkServlet extends HttpServletBean implements Applic
 			// Either the context is not a ConfigurableApplicationContext with refresh
 			// support or the context injected at construction time had already been
 			// refreshed -> trigger initial onRefresh manually here.
-			synchronized (this.onRefreshMonitor) {
+			synchronized (this.onRefreshMonitor) {  // 子类自定义对servlet子上下文后续操作，在DispatcherServlet中实现
 				onRefresh(wac);
 			}
 		}
 
+		// 发布servlet子上下文到ServletContext
 		if (this.publishContext) {
 			// Publish the context as a servlet context attribute.
 			String attrName = getServletContextAttributeName();
@@ -631,15 +640,19 @@ public abstract class FrameworkServlet extends HttpServletBean implements Applic
 					"': custom WebApplicationContext class [" + contextClass.getName() +
 					"] is not of type ConfigurableWebApplicationContext");
 		}
+		//反射创建实例
 		ConfigurableWebApplicationContext wac =
 				(ConfigurableWebApplicationContext) BeanUtils.instantiateClass(contextClass);
 
 		wac.setEnvironment(getEnvironment());
+		//设置父容器
 		wac.setParent(parent);
 		String configLocation = getContextConfigLocation();
 		if (configLocation != null) {
+			//设置容器启动XML：例如init-param的contextConfigLocation  classpath*:spring-mvc.xml
 			wac.setConfigLocation(configLocation);
 		}
+		//初始化新创建的子容器
 		configureAndRefreshWebApplicationContext(wac);
 
 		return wac;
@@ -659,6 +672,7 @@ public abstract class FrameworkServlet extends HttpServletBean implements Applic
 			}
 		}
 
+		//将ServletContext和ServletConfig都绑定到servlet子上下文对象中
 		wac.setServletContext(getServletContext());
 		wac.setServletConfig(getServletConfig());
 		wac.setNamespace(getNamespace());
@@ -674,6 +688,7 @@ public abstract class FrameworkServlet extends HttpServletBean implements Applic
 
 		postProcessWebApplicationContext(wac);
 		applyInitializers(wac);
+		//最后初始化子容器，和上面根容器初始化一样
 		wac.refresh();
 	}
 

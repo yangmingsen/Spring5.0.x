@@ -495,14 +495,23 @@ public class DispatcherServlet extends FrameworkServlet {
 	 * <p>May be overridden in subclasses in order to initialize further strategy objects.
 	 */
 	protected void initStrategies(ApplicationContext context) {
+		// 文件上传解析器
 		initMultipartResolver(context);
+		// 本地化解析器
 		initLocaleResolver(context);
+		// 主题解析器
 		initThemeResolver(context);
+		// 处理器映射器(url和Controller方法的映射)
 		initHandlerMappings(context);
+		// 处理器适配器(实际执行Controller方法)
 		initHandlerAdapters(context);
+		// 处理器异常解析器
 		initHandlerExceptionResolvers(context);
+		// RequestToViewName解析器
 		initRequestToViewNameTranslator(context);
+		// 视图解析器(视图的匹配和渲染)
 		initViewResolvers(context);
+		// FlashMap管理者
 		initFlashMapManager(context);
 	}
 
@@ -576,15 +585,22 @@ public class DispatcherServlet extends FrameworkServlet {
 	 * Initialize the HandlerMappings used by this class.
 	 * <p>If no HandlerMapping beans are defined in the BeanFactory for this namespace,
 	 * we default to BeanNameUrlHandlerMapping.
+	 *
+	 * 初始化此类使用的HandlerMappings。
+	 * 如果在BeanFactory中没有为此名称空间定义HandlerMapping Bean，则默认为BeanNameUrlHandlerMapping。
+	 *
 	 */
 	private void initHandlerMappings(ApplicationContext context) {
 		this.handlerMappings = null;
 
+		// 是否查找所有HandlerMapping标识
 		if (this.detectAllHandlerMappings) {
 			// Find all HandlerMappings in the ApplicationContext, including ancestor contexts.
+			// 从上下文(包含所有父上下文)中查找HandlerMapping类型的Bean，是下文中的RequestMappingHandlerMapping，其中包含URL和Mapping的映射Map
 			Map<String, HandlerMapping> matchingBeans =
 					BeanFactoryUtils.beansOfTypeIncludingAncestors(context, HandlerMapping.class, true, false);
 			if (!matchingBeans.isEmpty()) {
+				//将从容器中查找出来的HandlerMapping加入到DispatcherServlet的handlerMappings属性中
 				this.handlerMappings = new ArrayList<>(matchingBeans.values());
 				// We keep HandlerMappings in sorted order.
 				AnnotationAwareOrderComparator.sort(this.handlerMappings);
@@ -592,6 +608,7 @@ public class DispatcherServlet extends FrameworkServlet {
 		}
 		else {
 			try {
+				// 根据指定名称获取HandlerMapping对象
 				HandlerMapping hm = context.getBean(HANDLER_MAPPING_BEAN_NAME, HandlerMapping.class);
 				this.handlerMappings = Collections.singletonList(hm);
 			}
@@ -600,6 +617,7 @@ public class DispatcherServlet extends FrameworkServlet {
 			}
 		}
 
+		// 确保至少有一个HandlerMapping，如果没能找到，注册一个默认的
 		// Ensure we have at least one HandlerMapping, by registering
 		// a default HandlerMapping if no other mappings are found.
 		if (this.handlerMappings == null) {

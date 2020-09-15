@@ -51,14 +51,21 @@ import org.springframework.web.context.support.StandardServletEnvironment;
  * its config parameters ({@code init-param} entries within the
  * {@code servlet} tag in {@code web.xml}) as bean properties.
  *
+ * HttpServlet的简单扩展，将其配置参数（web.xml中servlet标记内的init-param条目）视为bean属性。
+ *
  * <p>A handy superclass for any type of servlet. Type conversion of config
  * parameters is automatic, with the corresponding setter method getting
  * invoked with the converted value. It is also possible for subclasses to
  * specify required properties. Parameters without matching bean property
  * setter will simply be ignored.
  *
+ * 任何类型的servlet的便捷超类。配置参数的类型转换是自动的，相应的setter方法将被转换后的值调用。
+ * 子类也可以指定所需的属性。没有匹配的bean属性设置器的参数将被忽略。
+ *
  * <p>This servlet leaves request handling to subclasses, inheriting the default
  * behavior of HttpServlet ({@code doGet}, {@code doPost}, etc).
+ *
+ * 该Servlet将请求处理留给子类，继承HttpServlet的默认行为（doGet，doPost等）。
  *
  * <p>This generic servlet base class has no dependency on the Spring
  * {@link org.springframework.context.ApplicationContext} concept. Simple
@@ -67,9 +74,16 @@ import org.springframework.web.context.support.StandardServletEnvironment;
  * filter's {@link #getServletContext() ServletContext} (see
  * {@link org.springframework.web.context.support.WebApplicationContextUtils}).
  *
+ * 这个通用的servlet基类不依赖于Spring org.springframework.context.ApplicationContext概念。
+ * 简单的servlet通常不加载自己的上下文，而是从Spring根应用程序上下文访问服务bean，
+ * 可通过过滤器的ServletContext访问（请参阅org.springframework.web.context.support.WebApplicationContextUtils）。
+ *
  * <p>The {@link FrameworkServlet} class is a more specific servlet base
  * class which loads its own application context. FrameworkServlet serves
  * as direct base class of Spring's full-fledged {@link DispatcherServlet}.
+ *
+ * FrameworkServlet类是更特定的servlet基类，它加载其自己的应用程序上下文。
+ * FrameworkServlet是Spring完整的DispatcherServlet的直接基类。
  *
  * @author Rod Johnson
  * @author Juergen Hoeller
@@ -151,13 +165,17 @@ public abstract class HttpServletBean extends HttpServlet implements Environment
 		}
 
 		// Set bean properties from init parameters.
+		//从初始化参数设置bean属性。例如init-param的contextConfigLocation  classpath*:spring-mvc.xml
 		PropertyValues pvs = new ServletConfigPropertyValues(getServletConfig(), this.requiredProperties);
 		if (!pvs.isEmpty()) {
 			try {
+				//将DispatcherServlet转化成Spring里面的Bean，
 				BeanWrapper bw = PropertyAccessorFactory.forBeanPropertyAccess(this);
+				//加载配置信息
 				ResourceLoader resourceLoader = new ServletContextResourceLoader(getServletContext());
 				bw.registerCustomEditor(Resource.class, new ResourceEditor(resourceLoader, getEnvironment()));
 				initBeanWrapper(bw);
+				//通过Spring的Bean赋值方式给DispatcherServlet初始化属性值
 				bw.setPropertyValues(pvs, true);
 			}
 			catch (BeansException ex) {
@@ -169,6 +187,7 @@ public abstract class HttpServletBean extends HttpServlet implements Environment
 		}
 
 		// Let subclasses do whatever initialization they like.
+		//模板方法，子类可以去自定义
 		initServletBean();
 
 		if (logger.isDebugEnabled()) {
